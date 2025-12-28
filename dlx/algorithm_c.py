@@ -135,7 +135,7 @@ class AlgorithmC:
         column = row.r
 
         while column != row:
-            self.commit(column, column.header)
+            self.commit(column)
             column = column.r
 
     def uncommit_columns(self, row):
@@ -145,7 +145,7 @@ class AlgorithmC:
         column = row.l
 
         while column != row:
-            self.uncommit(column, column.header)
+            self.uncommit(column)
             column = column.l
 
     def cover(self, column):
@@ -201,41 +201,41 @@ class AlgorithmC:
                 node.header.multiplicity += 1
             node = node.l
 
-    def commit(self, p, j):
-        if p.color == 0:
-            self.cover(j)
-        elif p.color > 0:
-            self.purify(p)
+    def commit(self, node):
+        if node.color == 0:
+            self.cover(node)
+        elif node.color > 0:
+            self.purify(node)
 
-    def purify(self, p):
-        c = p.color
-        i = p.header
-        q = i.d
+    def purify(self, node):
+        color = node.color
+        header = node.header
+        node = header.d
 
-        while q != i:
-            if q.color == c:
-                q.color = -1
+        while node != header:
+            if node.color == color:
+                node.color = -1
             else:
-                self.hide(q)
-            q = q.d
+                self.hide(node)
+            node = node.d
 
-    def uncommit(self, p, j):
-        if p.color == 0:
-            self.uncover(j)
-        elif p.color > 0:
-            self.unpurify(p)
+    def uncommit(self, node):
+        if node.color == 0:
+            self.uncover(node)
+        elif node.color > 0:
+            self.unpurify(node)
 
-    def unpurify(self, p):
-        c = p.color
-        i = p.header
-        q = i.u
+    def unpurify(self, node):
+        color = node.color
+        header = node.header
+        node = header.u
 
-        while q != i:
-            if q.color < 0:
-                q.color = c
+        while node != header:
+            if node.color < 0:
+                node.color = color
             else:
-                self.unhide(q)
-            q = q.u
+                self.unhide(node)
+            node = node.u
 
     def get_min_column(self):
         """
