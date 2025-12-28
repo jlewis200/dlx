@@ -22,7 +22,7 @@ class TestAlgorithmX(unittest.TestCase):
         for char in "abcdefg":
             header = Header(name=char)
             headers[char] = header
-            root.append_left(header)
+            root.insert_left(header)
 
         rows = ["ce", "adg", "bcf", "adf", "bg", "deg"]
 
@@ -32,13 +32,13 @@ class TestAlgorithmX(unittest.TestCase):
             for char in row:
                 header = headers[char]
                 node = Node(name=row, header=header)
-                header.append_up(node)
+                header.insert_up(node)
                 nodes.append(node)
 
             node = nodes.pop(0)
 
             for other in nodes:
-                node.append_left(other)
+                node.insert_left(other)
 
         solutions = []
         for solution in AlgorithmX(root).solutions():

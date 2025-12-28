@@ -23,7 +23,7 @@ class Node:
     def __repr__(self):
         return self.name
 
-    def append_left(self, other):
+    def insert_left(self, other):
         """
         Append other node to the left of self.
         """
@@ -32,7 +32,7 @@ class Node:
         self.l.r = other
         self.l = other
 
-    def append_right(self, other):
+    def insert_right(self, other):
         """
         Append other node to the right of self.
         """
@@ -41,7 +41,7 @@ class Node:
         self.r.l = other
         self.r = other
 
-    def append_down(self, other):
+    def insert_down(self, other):
         """
         Append other node under self.
         """
@@ -50,7 +50,7 @@ class Node:
         self.d.u = other
         self.d = other
 
-    def append_up(self, other):
+    def insert_up(self, other):
         """
         Append other node above self.
         """
@@ -70,18 +70,18 @@ class Header(Node):
         self.header = self
         self.multiplicity = 0
 
-    def append_down(self, other):
+    def insert_down(self, other):
         """
         Append other node under self.
         """
-        super().append_down(other)
+        super().insert_down(other)
         self.multiplicity += 1
 
-    def append_up(self, other):
+    def insert_up(self, other):
         """
         Append other node above self.
         """
-        super().append_up(other)
+        super().insert_up(other)
         self.multiplicity += 1
 
 

@@ -13,7 +13,7 @@ def link_horizontally(nodes):
     root = nodes[0]
 
     for node in nodes[1:]:
-        root.append_left(node)
+        root.insert_left(node)
 
 
 def _get_headers(iterable):
@@ -44,7 +44,7 @@ def add_constraints(root, headers, constraints):
             name, color = parse_item(item)
             header = headers[name]
             node = Node(row=row, name=item, header=header, color=color)
-            header.append_up(node)
+            header.insert_up(node)
             nodes.append(node)
 
         link_horizontally(nodes)
@@ -105,13 +105,6 @@ class TestAlgorithmC(unittest.TestCase):
         Ensure the sovler handles the XCC problem from the DLX2 description
         https://www-cs-faculty.stanford.edu/~knuth/programs/dlx2.w
         """
-        root = Header(name="root")
-        headers = {}
-
-        for char in "ABCXY":
-            header = Header(name=char)
-            headers[char] = header
-            root.append_left(header)
         root = generate_graph(
             primary=["A", "B", "C"],
             secondary=["X", "Y"],
