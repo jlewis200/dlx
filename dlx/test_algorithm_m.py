@@ -52,8 +52,8 @@ def add_headers(root, primary, secondary, headers):
     root.secondary = secondary
 
 
-def add_constraints(root, headers, constraints):
-    for row in constraints:
+def add_options(root, headers, options):
+    for row in options:
         nodes = []
 
         for item in row:
@@ -66,18 +66,17 @@ def add_constraints(root, headers, constraints):
         link_horizontally(nodes)
 
 
-def generate_graph(primary, multiplicities, secondary, constraints):
+def generate_graph(primary_items, primary_multiplicities, secondary_items, options):
     root = Header(name="root")
-    headers = get_headers(primary, multiplicities, secondary)
-    add_headers(root, primary, secondary, headers)
-    add_constraints(root, headers, constraints)
+    headers = get_headers(primary_items, primary_multiplicities, secondary_items)
+    add_headers(root, primary_items, secondary_items, headers)
+    add_options(root, headers, options)
     return root
 
 
 def parse_item(item):
     if ":" in item:
         char, color = item.split(":")
-        # color = int(color, 0x10)
         color = int(color)
     else:
         char = item
@@ -86,7 +85,7 @@ def parse_item(item):
     return char, color
 
 
-def convert_to_nested_frozenset(solutions):
+def convert_to_frozenset(solutions):
     solution_set = set()
 
     for solution in solutions:
@@ -110,7 +109,7 @@ class TestAlgorithmM(unittest.TestCase):
         Perform functional testing.  Test case data and expected outputs can be
         very large, so they are stored separately as .json.
         """
-        with open("functional_test_data.json") as f_in:
+        with open("functional_test_data.json", encoding="utf-8") as f_in:
             functional_test_data = json.load(f_in)
 
         for idx, test_data in enumerate(functional_test_data):
@@ -121,6 +120,6 @@ class TestAlgorithmM(unittest.TestCase):
                 root = generate_graph(**test_data)
                 solutions = list(AlgorithmM(root).solutions())
                 self.assertEqual(
-                    convert_to_nested_frozenset(solutions),
-                    convert_to_nested_frozenset(expected),
+                    convert_to_frozenset(solutions),
+                    convert_to_frozenset(expected),
                 )
