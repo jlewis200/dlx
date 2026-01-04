@@ -134,7 +134,7 @@ class AlgorithmM:
         yield from self.enumerate_rows(min_column)
         yield from self.min_multiplicity_generator(min_column)
 
-        self.untweak_helper(first_tweak)
+        self.possibly_untweak(first_tweak)
         min_column.bound += 1
 
     def enumerate_rows(self, min_column):
@@ -216,15 +216,12 @@ class AlgorithmM:
         elif header.len <= (header.bound - header.slack):
             should_continue = False
 
-        elif header.bound != 0:
-            self.tweak(row)
-
-        elif header.bound == 0:
-            self.tweak(row, hide=False)
+        else:
+            self.tweak(row, hide=header.bound != 0)
 
         return should_continue
 
-    def untweak_helper(self, first_tweak):
+    def possibly_untweak(self, first_tweak):
         """
         This contains the majority of the logic from step 'M8 restore i'.
         """
@@ -234,10 +231,7 @@ class AlgorithmM:
             self.uncover(header)
 
         else:
-            if header.bound == 0:
-                self.untweak(first_tweak, False)
-            else:
-                self.untweak(first_tweak)
+            self.untweak(first_tweak, unhide=header.bound != 0)
 
     def include_row(self, row):
         """
