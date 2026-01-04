@@ -21,6 +21,22 @@ class Node:
     def __repr__(self):
         return f"{self.row}|{self.name}|{self.color}"
 
+    def unlink_vertical(self):
+        self.d.u = self.u
+        self.u.d = self.d
+
+    def relink_vertical(self):
+        self.d.u = self
+        self.u.d = self
+
+    def unlink_horizontal(self):
+        self.l.r = self.r
+        self.r.l = self.l
+
+    def relink_horizontal(self):
+        self.l.r = self
+        self.r.l = self
+
     def insert_left(self, other):
         """
         Append other node to the left of self.
@@ -70,7 +86,6 @@ class Header(Node):
         self.primary = primary
         self.slack = slack
         self.bound = bound
-        self.secondary = None
 
     def insert_down(self, other):
         """
@@ -153,11 +168,9 @@ class AlgorithmM:
         eliminate this column (to satisfy it) and continue solving.
         """
         if min_column.bound < min_column.slack:
-            min_column.l.r = min_column.r
-            min_column.r.l = min_column.l
+            min_column.unlink_horizontal()
             yield from self.solutions()
-            min_column.l.r = min_column
-            min_column.r.l = min_column
+            min_column.relink_horizontal()
 
     def tweak(self, row, hide=True):
         """
@@ -286,8 +299,7 @@ class AlgorithmM:
         column.
         """
         header = column.header
-        header.r.l = header.l
-        header.l.r = header.r
+        header.unlink_horizontal()
         row = header.d
 
         while row != header:
@@ -302,8 +314,7 @@ class AlgorithmM:
 
         while node != row:
             if node.color >= 0:
-                node.d.u = node.u
-                node.u.d = node.d
+                node.unlink_vertical()
                 node.header.len -= 1
             node = node.r
 
@@ -312,8 +323,7 @@ class AlgorithmM:
         Uncover a column by restoring the links to it.
         """
         header = column.header
-        header.r.l = header
-        header.l.r = header
+        header.relink_horizontal()
         row = header.u
 
         while row != header:
@@ -328,8 +338,7 @@ class AlgorithmM:
 
         while node != row:
             if node.color >= 0:
-                node.d.u = node
-                node.u.d = node
+                node.relink_vertical()
                 node.header.len += 1
             node = node.l
 
