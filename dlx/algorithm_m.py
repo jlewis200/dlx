@@ -120,7 +120,11 @@ class AlgorithmM:
             yield self.get_solution()
             return
 
-        min_column = self.get_min_column()
+        min_column, branching_degree = self.get_branching_degree()
+
+        if branching_degree == 0:
+            return
+
         first_tweak = min_column.d
         min_column.bound -= 1
 
@@ -139,15 +143,9 @@ class AlgorithmM:
         """
         row = min_column.d
 
-        try:
-            while row != min_column:
-                self.tweak_helper(row)
-                yield from self.include_row(row)
-                row = row.d
-
-        except ValueError:
-            pass
-
+        while row != min_column and self.possibly_tweak(row):
+            yield from self.include_row(row)
+            row = row.d
 
     def min_multiplicity_generator(self, min_column):
         """
@@ -201,23 +199,30 @@ class AlgorithmM:
 
         terminal_row.u = prev_row
 
-    def tweak_helper(self, row):
+    def possibly_tweak(self, row):
         """
         This contains the majority of the logic from step 'M5 possibly tweak'.
+
+        One of the branch termination criteria is checked here, so the return
+        value is a boolean indicating if the column options should continue
+        being tweaked, or if the outer loop can safely terminate early.
         """
         header = row.header
+        should_continue = True
 
         if (header.bound == 0) and (header.slack == 0):
-            return
+            pass
 
-        if header.len <= (header.bound - header.slack):
-            raise ValueError
+        elif header.len <= (header.bound - header.slack):
+            should_continue = False
 
-        if header.bound != 0:
+        elif header.bound != 0:
             self.tweak(row)
 
         elif header.bound == 0:
             self.tweak(row, hide=False)
+
+        return should_continue
 
     def untweak_helper(self, first_tweak):
         """
@@ -384,22 +389,36 @@ class AlgorithmM:
                 self.unhide(node)
             node = node.u
 
-    def get_min_column(self):
+    def get_branching_degree(self):
         """
-        Find the column with the fewest choices.
+        Find the column with the smallest branching degree.  This metric is
+        specified in the answer to exercise 166 in TAOCP 4b, page 463.
         """
         min_column = None
-        min_len = 2**64
+        min_monus = 2**64
         column = self.root.r
 
         while column != self.root:
-            if column.len < min_len:
+            monus = (column.len + 1) - (column.bound - column.slack)
+
+            if monus < min_monus or (
+                monus == min_monus
+                and (
+                    (column.slack < min_column.slack)
+                    or (
+                        column.slack == min_column.slack and column.len > min_column.len
+                    )
+                )
+            ):
                 min_column = column
-                min_len = column.len
+                min_monus = monus
+
+            if min_monus == 0:
+                break
 
             column = column.r
 
-        return min_column
+        return min_column, min_monus
 
     def solved(self):
         """
