@@ -1,0 +1,149 @@
+name: validate
+
+on: [push]
+ 
+
+jobs:
+
+  pylint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: install dependencies
+      run: |
+        python3 -m pip install --upgrade poetry
+        poetry install --with dev
+    - name: pylint
+      run: |
+        poetry run pylint --fail-under 9.0 ./
+
+  black:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: install dependencies
+      run: |
+        python3 -m pip install --upgrade poetry
+        poetry install --with dev
+    - name: black
+      run: |
+        poetry run black ./
+
+  unittest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: install dependencies
+      run: |
+        python3 -m pip install --upgrade poetry
+        poetry install --with dev
+    - name: unittest
+      run: |
+        poetry run python3 -m unittest
+
+  coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: install dependencies
+      run: |
+        python3 -m pip install --upgrade poetry
+        poetry install --with dev
+    - name: coverage
+      run: |
+        poetry run coverage run --source . -m unittest
+        poetry run coverage report -m --fail-under 80
+
+  package:
+    runs-on: ubuntu-latest
+    needs:
+    - pylint
+    - black
+    - unittest
+    - coverage
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade poetry
+        poetry install --with dev
+    - name: package
+      run: |
+        poetry version minor
+        poetry build
+    - name: store package artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist
+
+
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for Trusted Publishing
+      contents: write
+    needs:
+    - package
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade poetry
+        poetry install --with dev
+    - name: package
+      run: |
+        poetry version patch
+        poetry build
+    - name: commit version bump
+      run: |
+        git config user.name "ci-cd[bot]"
+        git config user.email "ci-cd[bot]@email.email"
+        git add pyproject.toml
+        git commit -m "Bump version [skip ci]."
+        git push origin HEAD:${GITHUB_REF_NAME}
+    - name: publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

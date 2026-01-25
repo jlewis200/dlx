@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dancing-links"
+version = "0.0.2"
+description = ""
+authors = ["Justin <18606523+jlewis200@users.noreply.github.com>"]
+exclude = ["**/test*"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.8.2"
+pylint = "^3.3.7"
+black = "^25.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+

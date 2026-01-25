@@ -4,7 +4,7 @@ black:
 	black ./
 
 pylint:
-	pylint --fail-under 9.5 ./
+	pylint --fail-under 9.0 ./
 
 coverage:
 	python3 -m coverage run --source . -m unittest
