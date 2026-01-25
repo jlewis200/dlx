@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dancing-links"
-version = "0.0.1"
+version = "0.0.2"
 description = ""
 authors = ["Justin <18606523+jlewis200@users.noreply.github.com>"]
 exclude = ["**/test*"]
